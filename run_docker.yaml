@@ -1,13 +1,61 @@
 ---
-  - name: Run the docker-compose file for http api
-    hosts: localhost
-    connection: local
-    tasks:
-    - name: Install docker and docker-compose in pip
+- hosts: localhost
+  become: true
+
+  tasks:
+    - name: Install aptitude using apt
+      apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+    - name: Install required system packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools', 'golang']
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      apt: update_cache=yes name=docker-ce state=latest
+
+    - name: Install Docker Module for Python
       pip:
-        name: 
-        - "docker"
-        - "docker-compose"
+        name:
+          - "docker"
+          - "docker-compose"
+
+    - name: Install docker for ansible
+      command: ansible-galaxy collection install community.docker
+
+    - name: Install docker-compose
+      command: curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
     - name: Execute docker-compose
       community.docker.docker_compose:
-        project_src: .
+        project_src: '{{ playbook_dir }}'
+
+    - name: Add the server-api.test hostname to /etc/hosts
+      become: yes
+      lineinfile:
+        dest: /etc/hosts
+        regexp: "^{{ item['ip'] }}.*$"
+        line: "{{ item['ip'] }}\t\t{{ item['names'] | join(' ') }}"
+        state: present
+      with_items:
+      - ip: 127.0.0.1
+        names:
+        - ubuntu
+        - localhost
+        - server-api.test
+
+    - name: print to stdout
+      command: curl server-api.test
+      register: curl_output
+
+    - debug: msg="{{ curl_output.stdout }}"
+
