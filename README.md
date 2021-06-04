@@ -1,6 +1,7 @@
 # devops-test
 Use the sequence of commands:
 # sudo apt install ansible
+# ansible-galaxy collection install community.docker
 # ansible-playbook run_docker.yaml
 
 Once the project has been started, there will be two containers:
