@@ -1,0 +1,13 @@
+---
+  - name: Run the docker-compose file for http api
+    hosts: localhost
+    connection: local
+    tasks:
+    - name: Install docker and docker-compose in pip
+      pip:
+        name: 
+          - "docker"
+          - "docker-compose"
+    - name: Execute docker-compose
+      community.docker.docker_compose:
+        project_src: ./test-alexdan-project
