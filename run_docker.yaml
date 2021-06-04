@@ -32,6 +32,13 @@
     - name: Install docker for ansible
       command: ansible-galaxy collection install community.docker
 
+    - name: Adding user '{{ ansible_user }}' to docker group
+      user:
+        name: '{{ ansible_user }}'
+        groups: docker
+        append: yes
+      become: yes
+
     - name: Execute docker-compose
       community.docker.docker_compose:
         project_src: '{{ playbook_dir }}'
@@ -55,4 +62,3 @@
       register: curl_output
 
     - debug: msg="{{ curl_output.stdout }}"
-
