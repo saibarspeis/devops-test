@@ -1,4 +1,10 @@
-# devops-test
+
+# devops-test - Testing example
+
+The solution assumes the user you are running on:
+  1. Can sudo without a password (is present in /etc/sudoers with ALL=(ALL) NOPASSWD:ALL sintax)
+  2. Is part of docker group
+
 Use the sequence of commands:
 # sudo apt install ansible
 # ansible-galaxy collection install community.docker
